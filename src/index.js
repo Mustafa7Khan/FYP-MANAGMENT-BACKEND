@@ -12,7 +12,7 @@ const app=express();
 
 console.log(`process.env.GOOGLE_PRIVATE_KEY` + process.env.GOOGLE_CLIENT_EMAIL);
 const cors = require("cors");
-app.use(cors({ origin: "https://awkumtech.awkum.edu.pk/", credentials: true }));
+app.use(cors({ origin: "https://awkumtech.awkum.edu.pk", credentials: true }));
 
 //Midlleware
 app.use(express.json());
