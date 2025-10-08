@@ -18,10 +18,16 @@ const allowedOrigins = [
 // --- Middleware ---
 // It's good practice to define middleware before routes
 
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  console.log("Incoming Origin:", origin); // ✅ Log to verify what the browser sends
+
+  if (origin && allowedOrigins.some(o => o === origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    // Optional: temporarily allow all origins to confirm the issue
+    // res.setHeader("Access-Control-Allow-Origin", "*");
   }
 
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
