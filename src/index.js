@@ -7,27 +7,21 @@ const userroutes = require("./routes/userroutes");
 
 // Create the Express app instance
 const app = express();
-
 const allowedOrigins = [
   "https://awkumtech.awkum.edu.pk",
-  "https://www.awkumtech.awkum.edu.pk"
+  "https://www.awkumtech.awkum.edu.pk",
+  "http://localhost:5173"
 ];
-
-
-
-// --- Middleware ---
-// It's good practice to define middleware before routes
-
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  console.log("Incoming Origin:", origin); // ✅ Log to verify what the browser sends
+  console.log("Incoming Origin:", origin);
 
-  if (origin && allowedOrigins.some(o => o === origin)) {
+  // ✅ If origin is undefined (server-side call or stripped), use default frontend domain
+  if (!origin) {
+    res.setHeader("Access-Control-Allow-Origin", "https://awkumtech.awkum.edu.pk");
+  } else if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    // Optional: temporarily allow all origins to confirm the issue
-    // res.setHeader("Access-Control-Allow-Origin", "*");
   }
 
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -40,6 +34,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 app.use(express.json({ limit: "10mb" }));
 
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
