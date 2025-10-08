@@ -8,13 +8,32 @@ const userroutes = require("./routes/userroutes");
 // Create the Express app instance
 const app = express();
 
+const allowedOrigins = [
+  "https://awkumtech.awkum.edu.pk",
+  "https://www.awkumtech.awkum.edu.pk"
+];
+
+
+
 // --- Middleware ---
 // It's good practice to define middleware before routes
-app.use(cors({
-  origin: ["https://awkumtech.awkum.edu.pk"],  // frontend domain
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 app.use(express.json({ limit: "10mb" }));
 
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
