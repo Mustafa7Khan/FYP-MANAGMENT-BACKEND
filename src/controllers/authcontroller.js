@@ -7,7 +7,7 @@ const { User, Group } = require("../models/usermodel");
 const uploadToDrive = require("../uploades/googledrive");
 
 const register = async (req, res) => {
-  try {
+  try { 
     const { name, email, password } = req.body;
     const file = req.file;
 
