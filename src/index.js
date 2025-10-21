@@ -8,29 +8,37 @@ const userroutes = require("./routes/userroutes.js");
 const app = express();
 
 // --- Allowed Frontend Origins ---
-const allowedOrigins = [
-  "https://awkumtech.awkum.edu.pk",
-  "https://www.awkumtech.awkum.edu.pk",
-  "http://localhost:5173",
-];
+// --- CORS Middleware (Manual to fix Vercel issue) ---
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "https://awkumtech.awkum.edu.pk",
+    "https://www.awkumtech.awkum.edu.pk",
+    "http://localhost:5173",
+  ];
 
-// --- CORS Configuration ---
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn("❌ Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
 
-// ✅ Must be BEFORE routes
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // <-- Handles all preflight requests globally
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // ✅ Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+ // <-- Handles all preflight requests globally
 
 // --- Body Parser ---
 app.use(express.json({ limit: "50mb" }));
@@ -49,10 +57,7 @@ app.use("/api/auth", authroutes);
 app.use("/api/user", userroutes);
 
 // --- Error Handler ---
-app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
-  res.status(500).json({ message: err.message });
-});
+
 
 // --- Server Startup Function ---
 const startServer = async () => {
