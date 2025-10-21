@@ -544,4 +544,4 @@ const deleteGroup = async (req, res) => {
 module.exports = {register,login,createGroup,uploadGroupFile,
 
   getGroupDetailsByEmail,getAllGroups,deleteGroup,updateGroup,
- sendGroupEmails,updateUser,getAllUsers,saveTeacherMarks,getAssignedGroups};
+ sendGroupEmails,updateUser,getAllUsers,saveTeacherMarks,getAssignedGroups,updatePassword};
