@@ -4,7 +4,7 @@ const router = express.Router();
 const { uploadSingleCV, googleDriveUpload,uploadFileMulter } = require("../midlleware/upload");  // fixed path
 const { register, login, createGroup,getAllGroups,updateGroup,deleteGroup,
   getGroupDetailsByEmail,getAllUsers,updateUser,getAssignedGroups,uploadGroupFile,saveTeacherMarks,
-sendGroupEmails} = require("../controllers/authcontroller");
+sendGroupEmails,updatePassword} = require("../controllers/authcontroller");
 
 const verifyToken = require("../midlleware/authmidllleware");
 
@@ -15,10 +15,11 @@ router.post('/save-teacher-marks',  saveTeacherMarks);
 
 router.post("/register", uploadSingleCV, register);
 
-
+reouter.post("/update-password", verifyToken, updatePassword);
 router.get("/getusers", verifyToken, getAllUsers);
 router.put("/updateuser/:id", verifyToken, updateUser);
 router.post("/login", login);
+
 router.get("/group/:email", getGroupDetailsByEmail);
 router.post("/creategroup",googleDriveUpload,createGroup);
 router.post("/upload/:type/:email", uploadFileMulter,uploadGroupFile);
