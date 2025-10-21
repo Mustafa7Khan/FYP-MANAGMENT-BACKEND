@@ -5,22 +5,20 @@ const dbconnect = require("./config/dbconnect.js");
 const authroutes = require("./routes/authroutes.js");
 const userroutes = require("./routes/userroutes.js");
 
-// --- Create the Express app instance ---
 const app = express();
 
-// --- Allowed Origins ---
 const allowedOrigins = [
   "https://awkumtech.awkum.edu.pk",
   "https://www.awkumtech.awkum.edu.pk",
   "http://localhost:5173",
 ];
 
-// --- CORS Configuration ---
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true); // Allow if origin is in list or undefined (like server calls)
+      callback(null, true);
     } else {
+      console.warn("❌ Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -29,53 +27,37 @@ const corsOptions = {
   credentials: true,
 };
 
+// ✅ Allow CORS globally and for preflight requests
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-// --- Body Parsers ---
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// --- Health Check Route ---
 app.get("/", (req, res) => {
-  res.status(200).json({
-    status: "success",
-    message: "AWKUM Tech API is running smoothly 🚀",
-    environment: process.env.NODE_ENV || "development",
-  });
+  res.status(200).json({ message: "AWKUM Tech API running 🚀" });
 });
 
-// --- Routes ---
 app.use("/api/auth", authroutes);
 app.use("/api/user", userroutes);
 
-// --- Centralized Error Handler ---
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error("❌ Server Error:", err.message);
-  res.status(500).json({ message: "Internal Server Error" });
+  console.error("❌ Error:", err.message);
+  res.status(500).json({ message: err.message });
 });
 
-// --- Start the Server Function ---
 const startServer = async () => {
   try {
-    // 1. Connect to the Database
     await dbconnect();
-
-    // 2. Start Server
     const PORT = process.env.PORT || 8001;
     app.listen(PORT, () => {
-      console.log("====================================");
       console.log(`✅ Server running on port ${PORT}`);
-      console.log(`✅ Environment: ${process.env.NODE_ENV || "development"}`);
-      console.log(`✅ Allowed Origins: ${allowedOrigins.join(", ")}`);
-      console.log("====================================");
     });
-
   } catch (error) {
-    console.error("🚨 CRITICAL: Database connection failed. Server not started.");
-    console.error(error);
+    console.error("🚨 DB connection failed:", error);
     process.exit(1);
   }
 };
 
-// --- Execute Startup Function ---
 startServer();
