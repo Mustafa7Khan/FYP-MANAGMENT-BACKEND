@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
 const dbconnect = require("./config/dbconnect.js");
 const authroutes = require("./routes/authroutes.js");
 const userroutes = require("./routes/userroutes");
@@ -14,41 +13,46 @@ const allowedOrigins = [
   "http://localhost:5173"
 ];
 
-// ✅ Use official CORS middleware (Vercel-friendly)
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like server-to-server)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// ✅ CORS Middleware (handles preflight + real requests)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log("Incoming Origin:", origin);
 
-app.options("*", cors()); // ✅ Handle preflight requests
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    // Optional: uncomment this during debugging to confirm CORS works
+    // res.setHeader("Access-Control-Allow-Origin", "*");
+  }
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
-// --- Routes ---
+  // ✅ Always respond to OPTIONS preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+// ✅ Parse incoming JSON and URL-encoded data
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// ✅ Routes
 app.use("/api/auth", authroutes);
 app.use("/api/user", userroutes);
 
-// --- Start Server ---
+// ✅ Start the server
 const startServer = async () => {
   try {
     await dbconnect();
     const PORT = process.env.PORT || 8001;
     app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-  } catch (err) {
-    console.error("❌ Database connection failed:", err);
+  } catch (error) {
+    console.error("❌ Failed to connect to DB:", error);
     process.exit(1);
   }
 };
