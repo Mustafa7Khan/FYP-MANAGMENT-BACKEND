@@ -15,7 +15,7 @@ router.post('/save-teacher-marks',  saveTeacherMarks);
 
 router.post("/register", uploadSingleCV, register);
 
-reouter.post("/update-password", verifyToken, updatePassword);
+router.post("/update-password", verifyToken, updatePassword);
 router.get("/getusers", verifyToken, getAllUsers);
 router.put("/updateuser/:id", verifyToken, updateUser);
 router.post("/login", login);
